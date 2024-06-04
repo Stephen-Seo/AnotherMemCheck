@@ -2,6 +2,17 @@
 
 This software was created as an alternative to valgrind/memcheck.
 
+## How to Build
+
+1. Install cmake.
+2. Run `cmake -S <AnotherMemCheck_project_dir> -B buildDebug`.
+3. Run `make -C buildDebug`. The output library should be in the buildDebug/
+   directory.
+
+If a release build is desired, use `cmake -S <project_dir> -B buildRelease
+-DCMAKE_BUILD_TYPE=Release`. (Note that the "build directory" was changed to
+"buildRelease" in the preceeding command.)
+
 ## Usage
 
 1. Build this software with cmake.
