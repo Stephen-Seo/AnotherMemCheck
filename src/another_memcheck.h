@@ -30,8 +30,6 @@ namespace SC_AM_Internal {
     Malloced *data;
   };
 
-  using MapDataType = std::pair<const void*, Malloced>;
-
   struct Stats {
     Stats();
 
