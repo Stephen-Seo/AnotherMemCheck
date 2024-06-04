@@ -18,13 +18,7 @@ extern "C" {
     }
 
     if (SC_AM_Internal::stats == nullptr) {
-/*      std::clog << "Mallocing stats global ptr...\n";*/
       SC_AM_Internal::stats = SC_AM_Internal::get_init_stats();
-/*      std::clog << "Malloced stats global ptr...\n";*/
-/*      SC_AM_Internal::stats = reinterpret_cast<SC_AM_Internal::Stats*>(*/
-/*          SC_AM_Internal::real_malloc(sizeof(SC_AM_Internal::Stats)));*/
-/*      std::clog << "Initializing stats global ptr...\n";*/
-/*      SC_AM_Internal::stats->initialize();*/
     }
 
     return SC_AM_Internal::stats->do_malloc(size);
@@ -38,13 +32,7 @@ extern "C" {
     }
 
     if (SC_AM_Internal::stats == nullptr) {
-/*      std::clog << "Mallocing stats global ptr...\n";*/
       SC_AM_Internal::stats = SC_AM_Internal::get_init_stats();
-/*      std::clog << "Malloced stats global ptr...\n";*/
-/*      SC_AM_Internal::stats = reinterpret_cast<SC_AM_Internal::Stats*>(*/
-/*          SC_AM_Internal::real_malloc(sizeof(SC_AM_Internal::Stats)));*/
-/*      std::clog << "Initializing stats global ptr...\n";*/
-/*      SC_AM_Internal::stats->initialize();*/
     }
 
     return SC_AM_Internal::stats->do_free(ptr);
