@@ -28,3 +28,4 @@ set_target_properties(AnotherMemCheck PROPERTIES VERSION ${AnotherMemCheck_VERSI
                                                  SOVERSION ${AnotherMemCheck_SOVERSION})
 
 target_compile_features(AnotherMemCheck PUBLIC cxx_std_20)
+target_link_libraries(AnotherMemCheck PUBLIC pthread)

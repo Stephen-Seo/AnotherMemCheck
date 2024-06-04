@@ -50,7 +50,7 @@ namespace SC_AM_Internal {
     return false;
   }
 
-  Stats::Stats() : malloced_list_head(nullptr), malloced_list_tail(nullptr) {
+  Stats::Stats() : malloced_list_head(nullptr), malloced_list_tail(nullptr), pthread_mutex{.__align=0} {
   }
 
   void Stats::initialize() {
@@ -63,13 +63,26 @@ namespace SC_AM_Internal {
     malloced_list_head->data = nullptr;
     malloced_list_tail->data = nullptr;
 
+    pthread_mutex_init(&pthread_mutex, nullptr);
+
     on_exit([] ([[maybe_unused]] int status, void *ptr) {
-      const Stats *stats = reinterpret_cast<const Stats*>(ptr);
+      Stats *stats = reinterpret_cast<Stats*>(ptr);
       stats->print_status();
+      stats->cleanup();
     }, this);
   }
 
+  void Stats::cleanup() {
+    pthread_mutex_destroy(&pthread_mutex);
+    // TODO maybe cleanup list, but it is the end of the program.
+  }
+
   void *Stats::do_malloc(std::size_t size) {
+    if(int ret = pthread_mutex_lock(&pthread_mutex); ret == EINVAL) {
+      std::clog << "ERROR: pthread mutex not properly initialized!\n";
+      return nullptr;
+    }
+
     void *address = real_malloc(size);
     if (address != nullptr) {
       Malloced *data = reinterpret_cast<Malloced*>(real_malloc(sizeof(Malloced)));
@@ -78,10 +91,16 @@ namespace SC_AM_Internal {
       ListNode::add_to_list(malloced_list_tail, data);
     }
 
+    pthread_mutex_unlock(&pthread_mutex);
     return address;
   }
 
   void *Stats::do_calloc(std::size_t n, std::size_t size) {
+    if(int ret = pthread_mutex_lock(&pthread_mutex); ret == EINVAL) {
+      std::clog << "ERROR: pthread mutex not properly initialized!\n";
+      return nullptr;
+    }
+
     void *address = real_calloc(n, size);
     if (address != nullptr) {
       Malloced *data = reinterpret_cast<Malloced*>(real_malloc(sizeof(Malloced)));
@@ -90,15 +109,23 @@ namespace SC_AM_Internal {
       ListNode::add_to_list(malloced_list_tail, data);
     }
 
+    pthread_mutex_unlock(&pthread_mutex);
     return address;
   }
 
   void Stats::do_free(void *ptr) {
+    if(int ret = pthread_mutex_lock(&pthread_mutex); ret == EINVAL) {
+      std::clog << "ERROR: pthread mutex not properly initialized!\n";
+      return;
+    }
+
     if (ptr) {
       if(!ListNode::remove_from_list(malloced_list_head, ptr)) {
         std::clog << "WARNING: Attempted free of unknown memory location!\n";
       }
     }
+
+    pthread_mutex_unlock(&pthread_mutex);
   }
 
   void Stats::print_status() const {

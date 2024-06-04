@@ -1,6 +1,10 @@
 #ifndef SEODISPARATE_COM_ANOTHER_MEMCHECK_H
 #define SEODISPARATE_COM_ANOTHER_MEMCHECK_H
 
+extern "C" {
+#include <pthread.h>
+}
+
 namespace SC_AM_Internal {
   // Forward declaration.
   struct Stats;
@@ -42,8 +46,10 @@ namespace SC_AM_Internal {
 
     ListNode *malloced_list_head;
     ListNode *malloced_list_tail;
+    pthread_mutex_t pthread_mutex;
 
     void initialize();
+    void cleanup();
 
     void *do_malloc(std::size_t size);
     void *do_calloc(std::size_t n, std::size_t size);
