@@ -13,6 +13,7 @@ namespace SC_AM_Internal {
   constexpr unsigned int DATA_ITEMS_SIZE = 500;
 
   extern void *(*real_malloc)(std::size_t size);
+  extern void *(*real_calloc)(std::size_t n, std::size_t size);
   extern void (*real_free)(void *ptr);
 
   struct Malloced {
@@ -45,6 +46,7 @@ namespace SC_AM_Internal {
     void initialize();
 
     void *do_malloc(std::size_t size);
+    void *do_calloc(std::size_t n, std::size_t size);
     void do_free(void *ptr);
 
     void print_status() const;

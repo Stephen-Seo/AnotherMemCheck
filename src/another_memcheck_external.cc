@@ -22,6 +22,21 @@ extern "C" {
     return SC_AM_Internal::stats->do_malloc(size);
   }
 
+  void *calloc(std::size_t n, std::size_t size) {
+    std::clog << "attempting to calloc size: " << size << "...\n";
+
+    if (SC_AM_Internal::real_calloc == nullptr) {
+      SC_AM_Internal::real_calloc = reinterpret_cast<void*(*)(std::size_t, std::size_t)>(
+          dlsym(RTLD_NEXT, "calloc"));
+    }
+
+    if (SC_AM_Internal::stats == nullptr) {
+      SC_AM_Internal::stats = SC_AM_Internal::get_init_stats();
+    }
+
+    return SC_AM_Internal::stats->do_calloc(n, size);
+  }
+
   void free(void *ptr) {
     std::clog << "attempting to free...\n";
 

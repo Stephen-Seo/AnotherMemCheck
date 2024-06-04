@@ -18,6 +18,7 @@ namespace SC_AM_Internal {
   }
 
   void *(*real_malloc)(std::size_t) = nullptr;
+  void *(*real_calloc)(std::size_t, std::size_t) = nullptr;
   void (*real_free)(void*) = nullptr;
 
   Malloced::Malloced() : address(nullptr), size(0) {}
@@ -70,6 +71,18 @@ namespace SC_AM_Internal {
 
   void *Stats::do_malloc(std::size_t size) {
     void *address = real_malloc(size);
+    if (address != nullptr) {
+      Malloced *data = reinterpret_cast<Malloced*>(real_malloc(sizeof(Malloced)));
+      data->address = address;
+      data->size = size;
+      ListNode::add_to_list(malloced_list_tail, data);
+    }
+
+    return address;
+  }
+
+  void *Stats::do_calloc(std::size_t n, std::size_t size) {
+    void *address = real_calloc(n, size);
     if (address != nullptr) {
       Malloced *data = reinterpret_cast<Malloced*>(real_malloc(sizeof(Malloced)));
       data->address = address;
