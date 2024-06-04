@@ -105,7 +105,7 @@ namespace SC_AM_Internal {
     if (address != nullptr) {
       Malloced *data = reinterpret_cast<Malloced*>(real_malloc(sizeof(Malloced)));
       data->address = address;
-      data->size = size;
+      data->size = n * size;
       ListNode::add_to_list(malloced_list_tail, data);
     }
 
