@@ -71,12 +71,12 @@ namespace SC_AM_Internal {
   }
 
   void Stats::print_status() const {
+    // This function intentionally does not free its list of malloced memory as
+    // it is expected for the OS to reclaim memory from stopped processes and
+    // this function only runs at the end of program execution.
     std::clog << "List of unfreed memory:\n";
     auto *node = malloced_list;
-    [[maybe_unused]]
-    decltype(node) parent_node;
     while (node->next != nullptr) {
-      parent_node = node;
       node = node->next;
 
       std::clog << "  " << node->data->address << ": size " << node->data->size << '\n';
