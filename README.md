@@ -22,9 +22,9 @@ If a release build is desired, use `cmake -S <project_dir> -B buildRelease
         LD_PRELOAD=path/libAnotherMemCheck.so ./myProgram
 
 3. When the program exits, there should be diagnostic output from this library
-   showing all memory that has been `malloc`ed and not `free`ed. Note that some
-   memory will always be shown as having been not `free`ed (e.g. initializing
-   heap stuff for the program at start).
+   showing all memory that has been `malloc`ed or `calloc`ed and not `free`ed.
+   Note that some memory will always be shown as having been not `free`ed (e.g.
+   initializing heap stuff for the program at start).
 
 ## Other Notes
 
