@@ -24,16 +24,23 @@ namespace SC_AM_Internal {
   };
 
   struct ListNode {
-    ListNode() : next(nullptr), data(nullptr) {}
+    ListNode() : next(nullptr), prev(nullptr), data(nullptr) {}
+
+    static void add_to_list(ListNode *tail, Malloced *data);
+    /// Returns true if removed.
+    static bool remove_from_list(ListNode *head, void *ptr);
 
     ListNode *next;
+    ListNode *prev;
     Malloced *data;
   };
+
 
   struct Stats {
     Stats();
 
-    ListNode *malloced_list;
+    ListNode *malloced_list_head;
+    ListNode *malloced_list_tail;
 
     void initialize();
 
