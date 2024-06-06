@@ -28,6 +28,14 @@ If a release build is desired, use `cmake -S <project_dir> -B buildRelease
 
 ## Other Notes
 
+As mentioned earlier, there probably is memory that is always allocated at the
+start of a program that never gets free'd, but this should be ok because the OS
+should reclaim all allocated memory from a stopped process.
+
+Also, if one wants to prevent this software from printing every
+malloc/calloc/free call, one can set the `ANOTHER_MEMCHECK_QUIET=1` environment
+variable so that it only prints unfree'd memory at program execution end.
+
 Since this is relatively newly written software (as of middle of 2024), there
 might be a memory leak within this software when keeping track of memory. Thus,
 this software may be revised later on. If you are interested in verifying
