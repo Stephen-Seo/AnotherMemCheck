@@ -9,11 +9,15 @@
 
 namespace SC_AM_Internal {
   Stats *stats = nullptr;
+  int is_env_status = 0;
 
   Stats *get_init_stats() {
     Stats *stats = reinterpret_cast<SC_AM_Internal::Stats*>(
         real_malloc(sizeof(Stats)));
     stats->initialize();
+    is_env_status = getenv("ANOTHER_MEMCHECK_QUIET") != nullptr
+      ? ANOTHER_MEMCHECK_QUIET_EXISTS
+      : ANOTHER_MEMCHECK_QUIET_NOT_EXISTS;
     return stats;
   }
 

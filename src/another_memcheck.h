@@ -11,10 +11,13 @@ namespace SC_AM_Internal {
 
   extern Stats *stats;
 
-  Stats *get_init_stats();
+  constexpr int ANOTHER_MEMCHECK_QUIET_EXISTS = 1;
+  constexpr int ANOTHER_MEMCHECK_QUIET_NOT_EXISTS = 2;
 
-  constexpr unsigned int DATA_BLOCK_SIZE = 24;
-  constexpr unsigned int DATA_ITEMS_SIZE = 500;
+  /// 0 If unknown, 1 if env "ANOTHER_MEMCHECK_QUIET" exists, 2 if not.
+  extern int is_env_status;
+
+  Stats *get_init_stats();
 
   extern void *(*real_malloc)(std::size_t size);
   extern void *(*real_calloc)(std::size_t n, std::size_t size);

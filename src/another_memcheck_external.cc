@@ -9,8 +9,6 @@
 
 extern "C" {
   void *malloc(std::size_t size) {
-    std::clog << "attempting to malloc size: " << size << "...\n";
-
     if (SC_AM_Internal::real_malloc == nullptr) {
       SC_AM_Internal::real_malloc = reinterpret_cast<void*(*)(std::size_t)>(dlsym(RTLD_NEXT, "malloc"));
     }
@@ -19,12 +17,14 @@ extern "C" {
       SC_AM_Internal::stats = SC_AM_Internal::get_init_stats();
     }
 
+    if (SC_AM_Internal::is_env_status == SC_AM_Internal::ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
+      std::clog << "attempting to malloc size: " << size << "...\n";
+    }
+
     return SC_AM_Internal::stats->do_malloc(size);
   }
 
   void *calloc(std::size_t n, std::size_t size) {
-    std::clog << "attempting to calloc size: " << size << "...\n";
-
     if (SC_AM_Internal::real_calloc == nullptr) {
       SC_AM_Internal::real_calloc = reinterpret_cast<void*(*)(std::size_t, std::size_t)>(
           dlsym(RTLD_NEXT, "calloc"));
@@ -34,18 +34,24 @@ extern "C" {
       SC_AM_Internal::stats = SC_AM_Internal::get_init_stats();
     }
 
+    if (SC_AM_Internal::is_env_status == SC_AM_Internal::ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
+      std::clog << "attempting to calloc size: " << size << "...\n";
+    }
+
     return SC_AM_Internal::stats->do_calloc(n, size);
   }
 
   void free(void *ptr) {
-    std::clog << "attempting to free...\n";
-
     if (SC_AM_Internal::real_free == nullptr) {
       SC_AM_Internal::real_free = reinterpret_cast<void(*)(void*)>(dlsym(RTLD_NEXT, "free"));
     }
 
     if (SC_AM_Internal::stats == nullptr) {
       SC_AM_Internal::stats = SC_AM_Internal::get_init_stats();
+    }
+
+    if (SC_AM_Internal::is_env_status == SC_AM_Internal::ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
+      std::clog << "attempting to free...\n";
     }
 
     return SC_AM_Internal::stats->do_free(ptr);
