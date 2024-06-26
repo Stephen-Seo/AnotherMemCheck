@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.3
+
+Added ids to each chunk of allocated memory to make it easier to keep track of
+which allocated memory refers to which unfreed memory.
+
 ## Version 2.2
 
 Minor refactoring: remove unused constexpr declarations in header.
