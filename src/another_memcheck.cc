@@ -10,6 +10,7 @@
 namespace SC_AM_Internal {
   Stats *stats = nullptr;
   int is_env_status = 0;
+  unsigned long long Malloced::count = 0;
 
   Stats *get_init_stats() {
     Stats *stats = reinterpret_cast<SC_AM_Internal::Stats*>(
@@ -25,8 +26,8 @@ namespace SC_AM_Internal {
   void *(*real_calloc)(std::size_t, std::size_t) = nullptr;
   void (*real_free)(void*) = nullptr;
 
-  Malloced::Malloced() : address(nullptr), size(0) {}
-  Malloced::Malloced(void *address, std::size_t size) : address(address), size(size) {}
+  Malloced::Malloced() : address(nullptr), size(0), id(0) {}
+  Malloced::Malloced(void *address, std::size_t size) : address(address), size(size), id(0) {}
 
   void ListNode::add_to_list(ListNode *tail, Malloced *data) {
     ListNode *new_node = reinterpret_cast<ListNode*>(real_malloc(sizeof(ListNode)));
@@ -43,6 +44,9 @@ namespace SC_AM_Internal {
     while (node != nullptr) {
       node = node->next;
       if (node->data && node->data->address == ptr) {
+        if (is_env_status == ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
+          std::clog << " id: " << node->data->id << std::endl;
+        }
         node->prev->next = node->next;
         node->next->prev = node->prev;
         real_free(node->data);
@@ -92,6 +96,10 @@ namespace SC_AM_Internal {
       Malloced *data = reinterpret_cast<Malloced*>(real_malloc(sizeof(Malloced)));
       data->address = address;
       data->size = size;
+      data->id = data->count++;
+      if (is_env_status == ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
+        std::clog << " id: " << data->id << std::endl;
+      }
       ListNode::add_to_list(malloced_list_tail, data);
     }
 
@@ -110,6 +118,10 @@ namespace SC_AM_Internal {
       Malloced *data = reinterpret_cast<Malloced*>(real_malloc(sizeof(Malloced)));
       data->address = address;
       data->size = n * size;
+      data->id = data->count++;
+      if (is_env_status == ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
+        std::clog << " id: " << data->id << std::endl;
+      }
       ListNode::add_to_list(malloced_list_tail, data);
     }
 
@@ -117,19 +129,23 @@ namespace SC_AM_Internal {
     return address;
   }
 
-  void Stats::do_free(void *ptr) {
+  bool Stats::do_free(void *ptr) {
+    bool result = false;
     if(int ret = pthread_mutex_lock(&pthread_mutex); ret == EINVAL) {
       std::clog << "ERROR: pthread mutex not properly initialized!\n";
-      return;
+      return result;
     }
 
     if (ptr) {
       if(!ListNode::remove_from_list(malloced_list_head, ptr)) {
         std::clog << "WARNING: Attempted free of unknown memory location!\n";
+      } else {
+        result = true;
       }
     }
 
     pthread_mutex_unlock(&pthread_mutex);
+    return result;
   }
 
   void Stats::print_status() const {
@@ -142,7 +158,9 @@ namespace SC_AM_Internal {
       node = node->next;
 
       if (node->data) {
-        std::clog << "  " << node->data->address << ": size " << node->data->size << '\n';
+        std::clog << "  " << node->data->address
+          << ": size " << node->data->size
+          << " id " << node->data->id << '\n';
       }
     }
   }

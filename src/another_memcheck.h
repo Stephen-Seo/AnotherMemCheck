@@ -29,6 +29,8 @@ namespace SC_AM_Internal {
 
     void* address;
     std::size_t size;
+    unsigned long long id;
+    static unsigned long long count;
   };
 
   struct ListNode {
@@ -56,7 +58,8 @@ namespace SC_AM_Internal {
 
     void *do_malloc(std::size_t size);
     void *do_calloc(std::size_t n, std::size_t size);
-    void do_free(void *ptr);
+    /// true on success.
+    bool do_free(void *ptr);
 
     void print_status() const;
   };

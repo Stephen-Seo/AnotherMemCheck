@@ -18,7 +18,7 @@ extern "C" {
     }
 
     if (SC_AM_Internal::is_env_status == SC_AM_Internal::ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
-      std::clog << "attempting to malloc size: " << size << "...\n";
+      std::clog << "attempting to malloc size: " << size;
     }
 
     return SC_AM_Internal::stats->do_malloc(size);
@@ -35,7 +35,7 @@ extern "C" {
     }
 
     if (SC_AM_Internal::is_env_status == SC_AM_Internal::ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
-      std::clog << "attempting to calloc size: " << size << "...\n";
+      std::clog << "attempting to calloc size: " << size;
     }
 
     return SC_AM_Internal::stats->do_calloc(n, size);
@@ -51,10 +51,12 @@ extern "C" {
     }
 
     if (SC_AM_Internal::is_env_status == SC_AM_Internal::ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
-      std::clog << "attempting to free...\n";
+      std::clog << "attempting to free";
     }
 
-    return SC_AM_Internal::stats->do_free(ptr);
+    if (!SC_AM_Internal::stats->do_free(ptr)) {
+      std::clog << std::endl;
+    }
   }
 }
 
