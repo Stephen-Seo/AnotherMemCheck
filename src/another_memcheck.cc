@@ -43,7 +43,7 @@ namespace SC_AM_Internal {
     ListNode *node = head;
     while (node != nullptr) {
       node = node->next;
-      if (node->data && node->data->address == ptr) {
+      if (node && node->data && node->data->address == ptr) {
         if (is_env_status == ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
           std::clog << " id: " << node->data->id << std::endl;
         }
@@ -141,6 +141,7 @@ namespace SC_AM_Internal {
         std::clog << "WARNING: Attempted free of unknown memory location!\n";
       } else {
         result = true;
+        real_free(ptr);
       }
     }
 

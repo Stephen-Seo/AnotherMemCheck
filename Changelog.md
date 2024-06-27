@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 2.4
+
+Fixed free() not actually calling real_free().
+
+Fixed nullptr dereference during free.
+
 ## Version 2.3
 
 Added ids to each chunk of allocated memory to make it easier to keep track of
