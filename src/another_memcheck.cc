@@ -24,6 +24,7 @@ namespace SC_AM_Internal {
 
   void *(*real_malloc)(std::size_t) = nullptr;
   void *(*real_calloc)(std::size_t, std::size_t) = nullptr;
+  void *(*real_realloc)(void*, std::size_t) = nullptr;
   void (*real_free)(void*) = nullptr;
 
   Malloced::Malloced() : address(nullptr), size(0), id(0) {}
@@ -39,18 +40,34 @@ namespace SC_AM_Internal {
     new_node->data = data;
   }
 
-  bool ListNode::remove_from_list(ListNode *head, void *ptr) {
+  void ListNode::add_to_list(ListNode *tail, ListNode *node) {
+    node->next = tail;
+    node->prev = tail->prev;
+    tail->prev->next = node;
+    tail->prev = node;
+  }
+
+  bool ListNode::remove_from_list(ListNode *head,
+                                  void *ptr,
+                                  Stats *defer_handler) {
     ListNode *node = head;
     while (node != nullptr) {
       node = node->next;
       if (node && node->data && node->data->address == ptr) {
         if (is_env_status == ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
-          std::clog << " id: " << node->data->id << std::endl;
+          std::clog << " removing id: " << node->data->id;
+          if (!defer_handler) {
+            std::clog << std::endl;
+          }
         }
         node->prev->next = node->next;
         node->next->prev = node->prev;
-        real_free(node->data);
-        real_free(node);
+        if (defer_handler) {
+          defer_handler->deferred_node = node;
+        } else {
+          real_free(node->data);
+          real_free(node);
+        }
         return true;
       }
     }
@@ -58,7 +75,7 @@ namespace SC_AM_Internal {
     return false;
   }
 
-  Stats::Stats() : malloced_list_head(nullptr), malloced_list_tail(nullptr), pthread_mutex{.__align=0} {
+  Stats::Stats() : malloced_list_head(nullptr), malloced_list_tail(nullptr), deferred_node(nullptr), pthread_mutex{.__align=0} {
   }
 
   void Stats::initialize() {
@@ -70,6 +87,8 @@ namespace SC_AM_Internal {
     malloced_list_tail->prev = malloced_list_head;
     malloced_list_head->data = nullptr;
     malloced_list_tail->data = nullptr;
+
+    deferred_node = nullptr;
 
     pthread_mutex_init(&pthread_mutex, nullptr);
 
@@ -129,6 +148,45 @@ namespace SC_AM_Internal {
     return address;
   }
 
+  void *Stats::do_realloc(void *ptr, std::size_t size) {
+    if(int ret = pthread_mutex_lock(&pthread_mutex); ret == EINVAL) {
+      std::clog << "ERROR: pthread mutex not properly initialized!\n";
+      return nullptr;
+    }
+
+    if (ptr) {
+      if (!ListNode::remove_from_list(malloced_list_head, ptr, this)) {
+        std::clog << "WARNING: Attempted free of unknown memory location!\n";
+      }
+    }
+
+    void *address = real_realloc(ptr, size);
+    if (address != nullptr) {
+      if (deferred_node) {
+        deferred_node->data->address = address;
+        deferred_node->data->size = size;
+        deferred_node->data->id = deferred_node->data->count++;
+        if (is_env_status == ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
+          std::clog << ", adding id: " << deferred_node->data->id << std::endl;
+        }
+        ListNode::add_to_list(malloced_list_tail, deferred_node);
+        deferred_node = nullptr;
+      } else {
+        Malloced *data = reinterpret_cast<Malloced*>(real_malloc(sizeof(Malloced)));
+        data->address = address;
+        data->size = size;
+        data->id = data->count++;
+        if (is_env_status == ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
+          std::clog << ", adding id: " << data->id << std::endl;
+        }
+        ListNode::add_to_list(malloced_list_tail, data);
+      }
+    }
+
+    pthread_mutex_unlock(&pthread_mutex);
+    return address;
+  }
+
   bool Stats::do_free(void *ptr) {
     bool result = false;
     if(int ret = pthread_mutex_lock(&pthread_mutex); ret == EINVAL) {
@@ -137,7 +195,7 @@ namespace SC_AM_Internal {
     }
 
     if (ptr) {
-      if(!ListNode::remove_from_list(malloced_list_head, ptr)) {
+      if (!ListNode::remove_from_list(malloced_list_head, ptr)) {
         std::clog << "WARNING: Attempted free of unknown memory location!\n";
       } else {
         result = true;

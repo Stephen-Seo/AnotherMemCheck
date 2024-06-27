@@ -21,6 +21,7 @@ namespace SC_AM_Internal {
 
   extern void *(*real_malloc)(std::size_t size);
   extern void *(*real_calloc)(std::size_t n, std::size_t size);
+  extern void *(*real_realloc)(void *ptr, std::size_t size);
   extern void (*real_free)(void *ptr);
 
   struct Malloced {
@@ -37,8 +38,11 @@ namespace SC_AM_Internal {
     ListNode() : next(nullptr), prev(nullptr), data(nullptr) {}
 
     static void add_to_list(ListNode *tail, Malloced *data);
+    static void add_to_list(ListNode *tail, ListNode *node);
     /// Returns true if removed.
-    static bool remove_from_list(ListNode *head, void *ptr);
+    static bool remove_from_list(ListNode *head,
+                                 void *ptr,
+                                 Stats *defer_handler = nullptr);
 
     ListNode *next;
     ListNode *prev;
@@ -51,6 +55,7 @@ namespace SC_AM_Internal {
 
     ListNode *malloced_list_head;
     ListNode *malloced_list_tail;
+    ListNode *deferred_node;
     pthread_mutex_t pthread_mutex;
 
     void initialize();
@@ -58,6 +63,7 @@ namespace SC_AM_Internal {
 
     void *do_malloc(std::size_t size);
     void *do_calloc(std::size_t n, std::size_t size);
+    void *do_realloc(void*, std::size_t size);
     /// true on success.
     bool do_free(void *ptr);
 
