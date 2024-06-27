@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 2.5
+
+Added support for realloc().
+
 ## Version 2.4
 
 Fixed free() not actually calling real_free().
