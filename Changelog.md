@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 2.7
+
+Fix incorrect initialization.
+
 ## Version 2.6
 
 Use a more robust mutex (by using `std::recursive_mutex` instead of
