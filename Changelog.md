@@ -5,6 +5,8 @@
 Use a more robust mutex (by using `std::recursive_mutex` instead of
 `pthread_mutex`).
 
+Minor refactorings.
+
 ## Version 2.5
 
 Added support for realloc().
