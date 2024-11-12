@@ -1,6 +1,8 @@
 #ifndef SEODISPARATE_COM_ANOTHER_MEMCHECK_H
 #define SEODISPARATE_COM_ANOTHER_MEMCHECK_H
 
+#include <cstdint>
+
 namespace SC_AM_Internal {
   // Forward declaration.
   struct Stats;
@@ -48,14 +50,20 @@ namespace SC_AM_Internal {
 
   struct Stats {
     Stats();
+    ~Stats();
+
+    // Disable copy.
+    Stats(Stats &other) = delete;
+    Stats& operator=(Stats &other) = delete;
+
+    // Disable move.
+    Stats(Stats &&other) = delete;
+    Stats& operator=(Stats &&other) = delete;
 
     ListNode *malloced_list_head;
     ListNode *malloced_list_tail;
     ListNode *deferred_node;
     void *recursive_mutex;
-
-    void initialize();
-    void cleanup();
 
     void *do_malloc(std::size_t size);
     void *do_calloc(std::size_t n, std::size_t size);

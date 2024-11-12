@@ -19,7 +19,7 @@ namespace SC_AM_Internal {
   Stats *get_init_stats() {
     Stats *stats = reinterpret_cast<SC_AM_Internal::Stats*>(
         real_malloc(sizeof(Stats)));
-    stats->initialize();
+    [[maybe_unused]] void *unused = new(stats) Stats{};
     is_env_status = getenv("ANOTHER_MEMCHECK_QUIET") != nullptr
       ? ANOTHER_MEMCHECK_QUIET_EXISTS
       : ANOTHER_MEMCHECK_QUIET_NOT_EXISTS;
@@ -80,9 +80,6 @@ namespace SC_AM_Internal {
   }
 
   Stats::Stats() : malloced_list_head(nullptr), malloced_list_tail(nullptr), deferred_node(nullptr), recursive_mutex(nullptr) {
-  }
-
-  void Stats::initialize() {
     malloced_list_head = reinterpret_cast<ListNode*>(real_malloc(sizeof(ListNode)));
     malloced_list_tail = reinterpret_cast<ListNode*>(real_malloc(sizeof(ListNode)));
     malloced_list_head->next = malloced_list_tail;
@@ -95,13 +92,12 @@ namespace SC_AM_Internal {
     deferred_node = nullptr;
 
     recursive_mutex = real_malloc(sizeof(std::recursive_mutex));
-    void *unused = new(recursive_mutex) std::recursive_mutex{};
-    (void)unused;
+    [[maybe_unused]] void *unused = new(recursive_mutex) std::recursive_mutex{};
 
     std::atexit(exit_handler_stats);
   }
 
-  void Stats::cleanup() {
+  Stats::~Stats() {
     using std_recursive_mutex = std::recursive_mutex;
     ((std::recursive_mutex*)recursive_mutex)->~std_recursive_mutex();
     real_free(recursive_mutex);
@@ -221,7 +217,8 @@ namespace SC_AM_Internal {
 void exit_handler_stats() {
   if (SC_AM_Internal::stats != nullptr) {
     SC_AM_Internal::stats->print_status();
-    SC_AM_Internal::stats->cleanup();
+    using SCS_AM_INTERNAL_Stats = SC_AM_Internal::Stats;
+    SC_AM_Internal::stats->~SCS_AM_INTERNAL_Stats();
     SC_AM_Internal::stats = nullptr;
   }
 }
