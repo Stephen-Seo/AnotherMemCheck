@@ -29,20 +29,24 @@ If a release build is desired, use `cmake -S <project_dir> -B buildRelease
 ## With gdb
 
 1. Start the debugger
-
+    ```
     gdb ./my_program
+    ```
 
 2. Set the env variable to use AnotherMemCheck.
-
+    ```
     set environment LD_PRELOAD ./path/to/libAnotherMemCheck.so
+    ```
 
 3. Set debug breakpoints if you want to step through things
-
+    ```
     b my_source_file.c:123
+    ```
 
 4. Run it
-
+    ```
     r --my-arg-one --my-arg-two
+    ```
 
 AnotherMemCheck should output when memory is handled as the debugger runs, even
 when stepping through from breakpoints.
