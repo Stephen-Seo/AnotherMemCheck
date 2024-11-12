@@ -89,6 +89,8 @@ namespace SC_AM_Internal {
     malloced_list_head->data = nullptr;
     malloced_list_tail->data = nullptr;
 
+    deferred_node = nullptr;
+
     recursive_mutex = real_malloc(sizeof(std::recursive_mutex));
     void *unused = new(recursive_mutex) std::recursive_mutex{};
     (void)unused;
