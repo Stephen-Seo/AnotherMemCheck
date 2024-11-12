@@ -8,6 +8,9 @@
 // Local includes.
 #include "another_memcheck.h"
 
+// Function declaration.
+void exit_handler_stats();
+
 namespace SC_AM_Internal {
   Stats *stats = nullptr;
   int is_env_status = 0;
@@ -95,11 +98,7 @@ namespace SC_AM_Internal {
     void *unused = new(recursive_mutex) std::recursive_mutex{};
     (void)unused;
 
-    on_exit([] ([[maybe_unused]] int status, void *ptr) {
-      Stats *stats = reinterpret_cast<Stats*>(ptr);
-      stats->print_status();
-      stats->cleanup();
-    }, this);
+    std::atexit(exit_handler_stats);
   }
 
   void Stats::cleanup() {
@@ -215,6 +214,15 @@ namespace SC_AM_Internal {
           << " id " << node->data->id << '\n';
       }
     }
+  }
+}
+
+// Function definition.
+void exit_handler_stats() {
+  if (SC_AM_Internal::stats != nullptr) {
+    SC_AM_Internal::stats->print_status();
+    SC_AM_Internal::stats->cleanup();
+    SC_AM_Internal::stats = nullptr;
   }
 }
 
