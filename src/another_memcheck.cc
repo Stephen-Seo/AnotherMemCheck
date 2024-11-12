@@ -76,7 +76,7 @@ namespace SC_AM_Internal {
     return false;
   }
 
-  Stats::Stats() : malloced_list_head(nullptr), malloced_list_tail(nullptr), recursive_mutex(nullptr) {
+  Stats::Stats() : malloced_list_head(nullptr), malloced_list_tail(nullptr), deferred_node(nullptr), recursive_mutex(nullptr) {
   }
 
   void Stats::initialize() {
@@ -88,8 +88,6 @@ namespace SC_AM_Internal {
     malloced_list_tail->prev = malloced_list_head;
     malloced_list_head->data = nullptr;
     malloced_list_tail->data = nullptr;
-
-    deferred_node = nullptr;
 
     recursive_mutex = real_malloc(sizeof(std::recursive_mutex));
     void *unused = new(recursive_mutex) std::recursive_mutex{};
