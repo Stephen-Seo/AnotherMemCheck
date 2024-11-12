@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 2.9
+
+Add checking/stat-printing of when NULL pointers are free'd.
+
+Add note in README.md to use this library with a debugger.
+
 ## Version 2.8
 
 Internal refactorings.
