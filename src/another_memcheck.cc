@@ -15,6 +15,7 @@ namespace SC_AM_Internal {
   Stats *stats = nullptr;
   int is_env_status = 0;
   unsigned long long Malloced::count = 0;
+  unsigned long long null_count = 0;
 
   Stats *get_init_stats() {
     Stats *stats = reinterpret_cast<SC_AM_Internal::Stats*>(
@@ -184,11 +185,14 @@ namespace SC_AM_Internal {
 
     if (ptr) {
       if (!ListNode::remove_from_list(malloced_list_head, ptr)) {
-        std::clog << "WARNING: Attempted free of unknown memory location!\n";
+        std::clog << "\nWARNING: Attempted free of unknown memory location!";
       } else {
         result = true;
         real_free(ptr);
       }
+    } else {
+      std::clog << "\nWARNING: Attempted to free a NULL ptr!";
+      ++null_count;
     }
 
     ((std::recursive_mutex*)recursive_mutex)->unlock();
@@ -210,6 +214,7 @@ namespace SC_AM_Internal {
           << " id " << node->data->id << '\n';
       }
     }
+    std::clog << "Attempted to free a NULL ptr " <<  null_count << " times.\n";
   }
 }
 
