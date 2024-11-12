@@ -217,9 +217,12 @@ namespace SC_AM_Internal {
 void exit_handler_stats() {
   if (SC_AM_Internal::stats != nullptr) {
     SC_AM_Internal::stats->print_status();
-    using SCS_AM_INTERNAL_Stats = SC_AM_Internal::Stats;
-    SC_AM_Internal::stats->~SCS_AM_INTERNAL_Stats();
-    SC_AM_Internal::stats = nullptr;
+
+    // Avoids segfault when program calls `exit(...)`. OS should reclaim memory
+    // when the process ends even if it isn't free'd here.
+    //using SCS_AM_INTERNAL_Stats = SC_AM_Internal::Stats;
+    //SC_AM_Internal::stats->~SCS_AM_INTERNAL_Stats();
+    //SC_AM_Internal::stats = nullptr;
   }
 }
 
