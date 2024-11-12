@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstring>
 #include <cstdio>
+#include <mutex>
 
 // Local includes.
 #include "another_memcheck.h"
@@ -75,7 +76,7 @@ namespace SC_AM_Internal {
     return false;
   }
 
-  Stats::Stats() : malloced_list_head(nullptr), malloced_list_tail(nullptr), deferred_node(nullptr), pthread_mutex{.__align=0} {
+  Stats::Stats() : malloced_list_head(nullptr), malloced_list_tail(nullptr), recursive_mutex(nullptr) {
   }
 
   void Stats::initialize() {
@@ -90,7 +91,9 @@ namespace SC_AM_Internal {
 
     deferred_node = nullptr;
 
-    pthread_mutex_init(&pthread_mutex, nullptr);
+    recursive_mutex = real_malloc(sizeof(std::recursive_mutex));
+    void *unused = new(recursive_mutex) std::recursive_mutex{};
+    (void)unused;
 
     on_exit([] ([[maybe_unused]] int status, void *ptr) {
       Stats *stats = reinterpret_cast<Stats*>(ptr);
@@ -100,15 +103,14 @@ namespace SC_AM_Internal {
   }
 
   void Stats::cleanup() {
-    pthread_mutex_destroy(&pthread_mutex);
+    using std_recursive_mutex = std::recursive_mutex;
+    ((std::recursive_mutex*)recursive_mutex)->~std_recursive_mutex();
+    real_free(recursive_mutex);
     // TODO maybe cleanup list, but it is the end of the program.
   }
 
   void *Stats::do_malloc(std::size_t size) {
-    if(int ret = pthread_mutex_lock(&pthread_mutex); ret == EINVAL) {
-      std::clog << "ERROR: pthread mutex not properly initialized!\n";
-      return nullptr;
-    }
+    ((std::recursive_mutex*)recursive_mutex)->lock();
 
     void *address = real_malloc(size);
     if (address != nullptr) {
@@ -122,15 +124,12 @@ namespace SC_AM_Internal {
       ListNode::add_to_list(malloced_list_tail, data);
     }
 
-    pthread_mutex_unlock(&pthread_mutex);
+    ((std::recursive_mutex*)recursive_mutex)->unlock();
     return address;
   }
 
   void *Stats::do_calloc(std::size_t n, std::size_t size) {
-    if(int ret = pthread_mutex_lock(&pthread_mutex); ret == EINVAL) {
-      std::clog << "ERROR: pthread mutex not properly initialized!\n";
-      return nullptr;
-    }
+    ((std::recursive_mutex*)recursive_mutex)->lock();
 
     void *address = real_calloc(n, size);
     if (address != nullptr) {
@@ -144,15 +143,12 @@ namespace SC_AM_Internal {
       ListNode::add_to_list(malloced_list_tail, data);
     }
 
-    pthread_mutex_unlock(&pthread_mutex);
+    ((std::recursive_mutex*)recursive_mutex)->unlock();
     return address;
   }
 
   void *Stats::do_realloc(void *ptr, std::size_t size) {
-    if(int ret = pthread_mutex_lock(&pthread_mutex); ret == EINVAL) {
-      std::clog << "ERROR: pthread mutex not properly initialized!\n";
-      return nullptr;
-    }
+    ((std::recursive_mutex*)recursive_mutex)->lock();
 
     if (ptr) {
       if (!ListNode::remove_from_list(malloced_list_head, ptr, this)) {
@@ -183,16 +179,13 @@ namespace SC_AM_Internal {
       }
     }
 
-    pthread_mutex_unlock(&pthread_mutex);
+    ((std::recursive_mutex*)recursive_mutex)->unlock();
     return address;
   }
 
   bool Stats::do_free(void *ptr) {
     bool result = false;
-    if(int ret = pthread_mutex_lock(&pthread_mutex); ret == EINVAL) {
-      std::clog << "ERROR: pthread mutex not properly initialized!\n";
-      return result;
-    }
+    ((std::recursive_mutex*)recursive_mutex)->lock();
 
     if (ptr) {
       if (!ListNode::remove_from_list(malloced_list_head, ptr)) {
@@ -203,7 +196,7 @@ namespace SC_AM_Internal {
       }
     }
 
-    pthread_mutex_unlock(&pthread_mutex);
+    ((std::recursive_mutex*)recursive_mutex)->unlock();
     return result;
   }
 
