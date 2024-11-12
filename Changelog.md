@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 2.8
+
+Internal refactorings.
+
+Minor change to avoid segfault when program exits with `exit(...)` function.
+
 ## Version 2.7
 
 Fix incorrect initialization.
