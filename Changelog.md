@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming Changes
+
+Internal refactorings.
+
 ## Version 2.9
 
 Add checking/stat-printing of when NULL pointers are free'd.
