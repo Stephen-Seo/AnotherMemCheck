@@ -35,21 +35,21 @@ namespace SC_AM_Internal {
   Malloced::Malloced() : address(nullptr), size(0), id(0) {}
   Malloced::Malloced(void *address, std::size_t size) : address(address), size(size), id(0) {}
 
-  void ListNode::add_to_list(ListNode *tail, Malloced *data) {
+  void ListNode::add_to_list(ListNode *head, Malloced *data) {
     ListNode *new_node = reinterpret_cast<ListNode*>(real_malloc(sizeof(ListNode)));
-    new_node->next = tail;
-    new_node->prev = tail->prev;
-    tail->prev->next = new_node;
-    tail->prev = new_node;
+    new_node->prev = head;
+    new_node->next = head->next;
+    head->next->prev = new_node;
+    head->next = new_node;
 
     new_node->data = data;
   }
 
-  void ListNode::add_to_list(ListNode *tail, ListNode *node) {
-    node->next = tail;
-    node->prev = tail->prev;
-    tail->prev->next = node;
-    tail->prev = node;
+  void ListNode::add_to_list(ListNode *head, ListNode *node) {
+    node->prev = head;
+    node->next = head->next;
+    head->next->prev = node;
+    head->next = node;
   }
 
   bool ListNode::remove_from_list(ListNode *head,
@@ -117,7 +117,7 @@ namespace SC_AM_Internal {
       if (is_env_status == ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
         std::clog << " id: " << data->id << std::endl;
       }
-      ListNode::add_to_list(malloced_list_tail, data);
+      ListNode::add_to_list(malloced_list_head, data);
     }
 
     ((std::recursive_mutex*)recursive_mutex)->unlock();
@@ -136,7 +136,7 @@ namespace SC_AM_Internal {
       if (is_env_status == ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
         std::clog << " id: " << data->id << std::endl;
       }
-      ListNode::add_to_list(malloced_list_tail, data);
+      ListNode::add_to_list(malloced_list_head, data);
     }
 
     ((std::recursive_mutex*)recursive_mutex)->unlock();
@@ -161,7 +161,7 @@ namespace SC_AM_Internal {
         if (is_env_status == ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
           std::clog << ", adding id: " << deferred_node->data->id << std::endl;
         }
-        ListNode::add_to_list(malloced_list_tail, deferred_node);
+        ListNode::add_to_list(malloced_list_head, deferred_node);
         deferred_node = nullptr;
       } else {
         Malloced *data = reinterpret_cast<Malloced*>(real_malloc(sizeof(Malloced)));
@@ -171,7 +171,7 @@ namespace SC_AM_Internal {
         if (is_env_status == ANOTHER_MEMCHECK_QUIET_NOT_EXISTS) {
           std::clog << ", adding id: " << data->id << std::endl;
         }
-        ListNode::add_to_list(malloced_list_tail, data);
+        ListNode::add_to_list(malloced_list_head, data);
       }
     }
 
@@ -204,9 +204,9 @@ namespace SC_AM_Internal {
     // it is expected for the OS to reclaim memory from stopped processes and
     // this function only runs at the end of program execution.
     std::clog << "List of unfreed memory:\n";
-    auto *node = malloced_list_head;
-    while (node->next != nullptr) {
-      node = node->next;
+    auto *node = malloced_list_tail;
+    while (node->prev != nullptr) {
+      node = node->prev;
 
       if (node->data) {
         std::clog << "  " << node->data->address

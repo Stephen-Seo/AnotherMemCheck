@@ -35,8 +35,8 @@ namespace SC_AM_Internal {
   struct ListNode {
     ListNode() : next(nullptr), prev(nullptr), data(nullptr) {}
 
-    static void add_to_list(ListNode *tail, Malloced *data);
-    static void add_to_list(ListNode *tail, ListNode *node);
+    static void add_to_list(ListNode *head, Malloced *data);
+    static void add_to_list(ListNode *head, ListNode *node);
     /// Returns true if removed.
     static bool remove_from_list(ListNode *head,
                                  void *ptr,
