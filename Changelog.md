@@ -2,6 +2,8 @@
 
 ## Upcoming Changes
 
+## Version 2.10
+
 Internal refactorings.
 
 ## Version 2.9
