@@ -7,6 +7,8 @@ Add counts for bad `realloc`s and `free`s that are printed at program's end.
 (A bad `realloc` or `free` is an attempted `realloc` or `free` of a memory
 location that wasn't `malloc`d, `calloc`d, or `realloc`d.)
 
+Internal refactorings.
+
 ## Version 2.10
 
 Internal refactorings.
