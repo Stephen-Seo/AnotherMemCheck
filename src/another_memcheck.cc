@@ -16,6 +16,8 @@ namespace SC_AM_Internal {
   int is_env_status = 0;
   unsigned long long Malloced::count = 0;
   unsigned long long null_count = 0;
+  unsigned long long bad_realloc_count = 0;
+  unsigned long long bad_free_count = 0;
 
   Stats *get_init_stats() {
     Stats *stats = reinterpret_cast<SC_AM_Internal::Stats*>(
@@ -148,7 +150,8 @@ namespace SC_AM_Internal {
 
     if (ptr) {
       if (!ListNode::remove_from_list(malloced_list_head, ptr, this)) {
-        std::clog << "WARNING: Attempted free of unknown memory location!\n";
+        std::clog << "WARNING: Attempted realloc of unknown memory location!\n";
+        ++bad_realloc_count;
       }
     }
 
@@ -186,6 +189,7 @@ namespace SC_AM_Internal {
     if (ptr) {
       if (!ListNode::remove_from_list(malloced_list_head, ptr)) {
         std::clog << "\nWARNING: Attempted free of unknown memory location!";
+        ++bad_free_count;
       } else {
         result = true;
         real_free(ptr);
@@ -215,6 +219,8 @@ namespace SC_AM_Internal {
       }
     }
     std::clog << "Attempted to free a NULL ptr " <<  null_count << " times.\n";
+    std::clog << "Attempted to realloc an invalid ptr " << bad_realloc_count << " times.\n";
+    std::clog << "Attempted to free an invalid ptr " << bad_free_count << " times.\n";
   }
 }
 
