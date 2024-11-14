@@ -6,6 +6,8 @@
 
 Internal refactorings.
 
+Remove dependency on `pthread` in CMakeLists.txt.
+
 ## Version 2.9
 
 Add checking/stat-printing of when NULL pointers are free'd.
