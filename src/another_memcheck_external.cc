@@ -70,9 +70,9 @@ extern "C" {
       std::clog << "attempting to free";
     }
 
-    // TODO maybe handle boolean result, but already prints warnings on error.
-    SC_AM_Internal::stats->do_free(ptr);
-    std::clog << std::endl;
+    if (!SC_AM_Internal::stats->do_free(ptr)) {
+      std::clog << std::endl;
+    }
   }
 }
 
