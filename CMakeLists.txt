@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(AnotherMemCheck)
 
-set(AnotherMemCheck_VERSION 2.11)
+set(AnotherMemCheck_VERSION 2.12)
 set(AnotherMemCheck_SOVERSION 2)
 
 set(AnotherMemCheck_SOURCES

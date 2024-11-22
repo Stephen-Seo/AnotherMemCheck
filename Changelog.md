@@ -2,6 +2,10 @@
 
 ## Upcoming Changes
 
+## Version 2.12
+
+Fix output by reverting erronous commit.
+
 ## Version 2.11
 
 Add counts for bad `realloc`s and `free`s that are printed at program's end.
