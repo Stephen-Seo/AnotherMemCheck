@@ -2,6 +2,8 @@
 
 ## Upcoming Changes
 
+## Version 2.11
+
 Add counts for bad `realloc`s and `free`s that are printed at program's end.
 
 (A bad `realloc` or `free` is an attempted `realloc` or `free` of a memory
