@@ -11,7 +11,9 @@ Fix output by reverting erronous commit.
 Add counts for bad `realloc`s and `free`s that are printed at program's end.
 
 (A bad `realloc` or `free` is an attempted `realloc` or `free` of a memory
-location that wasn't `malloc`d, `calloc`d, or `realloc`d.)
+location that wasn't `malloc`d, `calloc`d, or `realloc`d. A `realloc` or `free`
+of a memory location that was already `free`d and not set to NULL is also
+considered a bad `realloc` or `free`.)
 
 Internal refactorings.
 
