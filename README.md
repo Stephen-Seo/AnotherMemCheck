@@ -65,5 +65,5 @@ Since this is relatively newly written software (as of middle of 2024), there
 might be a memory leak within this software when keeping track of memory. Thus,
 this software may be revised later on. If you are interested in verifying
 whether there is a memory leak or not, you may check the source and [submit an
-issue/pull-request](https://git.seodisparate.com/stephenseo#contributing) if
+issue/pull-request](https://github.com/Stephen-Seo/AnotherMemCheck/issues) if
 there is any discovered issue with the software.
